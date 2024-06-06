@@ -66,7 +66,7 @@ class SnakeGameAI:
                 quit()
 
         # 2. move
-        self._move(action) # update the head
+        self._move(action)  # update the head
         self.snake.insert(0, self.head)
         
         # 3. check if game over
@@ -129,7 +129,7 @@ class SnakeGameAI:
             new_dir = clock_wise[idx]
         else:
             next_idx = (idx - 1) % 4
-            new_dir = clock_wise[idx]
+            new_dir = clock_wise[next_idx]
 
         self.direction = new_dir
 
