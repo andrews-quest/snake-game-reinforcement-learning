@@ -35,8 +35,8 @@ class QTrainer:
 
     def train_step(self, state, action, reward, next_state, done):
         state = torch.tensor(state, dtype=torch.float)
-        action = torch.tensor(state, dtype=torch.long)
-        next_state = torch.tensor(state, dtype=torch.float)
+        action = torch.tensor(action, dtype=torch.long)
+        next_state = torch.tensor(next_state, dtype=torch.float)
         reward = torch.tensor(reward, dtype=torch.float)
 
         if(len(state.shape) == 1):
@@ -55,7 +55,7 @@ class QTrainer:
             if not done[idx]:
                 Q_new = reward[idx] + self.gamma * torch.max(self.model(next_state[idx]))
 
-            target[idx][torch.argmax(action).item()-2] = Q_new
+            target[idx][torch.argmax(action).item()] = Q_new
 
         # r + y * max(# next_predicted Q value) -> only do this if not done
         # pred.clone()

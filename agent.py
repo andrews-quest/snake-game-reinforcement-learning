@@ -4,6 +4,7 @@ import numpy as np
 from collections import deque
 from game import SnakeGameAI, Direction, Point
 from model import Linear_QNet, QTrainer
+from helper import plot
 
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
@@ -24,8 +25,8 @@ class Agent:
         head = game.snake[0]
         point_l = Point(head.x - 20, head.y) # 20 is block size
         point_r = Point(head.x + 20, head.y)
-        point_d = Point(head.x, head.y - 20)
-        point_u = Point(head.x, head.y + 20)
+        point_d = Point(head.x, head.y + 20)
+        point_u = Point(head.x, head.y - 20)
 
         dir_l = game.direction == Direction.LEFT
         dir_r = game.direction == Direction.RIGHT
@@ -34,22 +35,22 @@ class Agent:
 
         state = [
             # Danger straight
-            (dir_r and game.is_collision((point_r))) or
-            (dir_d and game.is_collision((point_d))) or
-            (dir_u and game.is_collision((point_u))) or
-            (dir_l and game.is_collision((point_l))),
+            (dir_r and game.is_collision(point_r)) or
+            (dir_d and game.is_collision(point_d)) or
+            (dir_u and game.is_collision(point_u)) or
+            (dir_l and game.is_collision(point_l)),
 
             # Danger right
-            (dir_r and game.is_collision((point_d))) or
-            (dir_l and game.is_collision((point_u))) or
-            (dir_u and game.is_collision((point_r))) or
-            (dir_d and game.is_collision((point_l))),
+            (dir_r and game.is_collision(point_d)) or
+            (dir_l and game.is_collision(point_u)) or
+            (dir_u and game.is_collision(point_r)) or
+            (dir_d and game.is_collision(point_l)),
 
             # Danger left
-            (dir_r and game.is_collision((point_u))) or
-            (dir_l and game.is_collision((point_d))) or
-            (dir_d and game.is_collision((point_r))) or
-            (dir_u and game.is_collision((point_l))),
+            (dir_r and game.is_collision(point_u)) or
+            (dir_l and game.is_collision(point_d)) or
+            (dir_d and game.is_collision(point_r)) or
+            (dir_u and game.is_collision(point_l)),
 
             # Move direction
             dir_l,
@@ -142,6 +143,9 @@ def train():
             total_score += score
             mean_score = total_score / agent.n_games
             plot_mean_scores.append(mean_score)
+            agent.model.save()
+            # plot(plot_scores, plot_mean_scores)
+
 
 if __name__ == '__main__':
     train()

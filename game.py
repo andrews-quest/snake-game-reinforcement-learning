@@ -18,13 +18,13 @@ Point = namedtuple('Point', 'x, y')
 
 # rgb colors
 WHITE = (255, 255, 255)
-RED = (200,0,0)
+RED = (200, 0, 0)
 BLUE1 = (0, 0, 255)
 BLUE2 = (0, 100, 255)
-BLACK = (0,0,0)
+BLACK = (0, 0, 0)
 
 BLOCK_SIZE = 20
-SPEED = 20
+SPEED = 1000
 
 class SnakeGameAI:
     
@@ -80,7 +80,7 @@ class SnakeGameAI:
         # 4. place new food or just move
         if self.head == self.food:
             self.score += 1
-            reward = 1
+            reward = 10
             self._place_food()
         else:
             self.snake.pop()
@@ -126,7 +126,7 @@ class SnakeGameAI:
             new_dir = clock_wise[idx] #no change
         elif np.array_equal(action, [0, 1, 0]):
             next_idx = (idx + 1) % 4
-            new_dir = clock_wise[idx]
+            new_dir = clock_wise[next_idx]
         else:
             next_idx = (idx - 1) % 4
             new_dir = clock_wise[next_idx]
