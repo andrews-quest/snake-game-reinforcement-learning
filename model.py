@@ -30,6 +30,7 @@ class QTrainer:
         self.lr = lr
         self.gamma = gamma
         self.model = model
+        self.model.to(torch.device('cuda:0'))
         self.optimizer = optim.Adam(model.parameters(), lr=lr)
         self.criterion = nn.MSELoss()
 
@@ -47,13 +48,13 @@ class QTrainer:
             done = (done, )
 
         # predicted Q values with current state
-        pred = self.model(state)
+        pred = self.model(state.to(torch.device('cuda:0')))
 
         target = pred.clone()
         for idx in range(len(done)):
             Q_new = reward[idx]
             if not done[idx]:
-                Q_new = reward[idx] + self.gamma * torch.max(self.model(next_state[idx]))
+                Q_new = reward[idx] + self.gamma * torch.max(self.model(next_state[idx].to(torch.device('cuda:0'))))
 
             target[idx][torch.argmax(action).item()] = Q_new
 
