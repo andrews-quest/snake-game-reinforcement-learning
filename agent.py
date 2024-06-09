@@ -37,6 +37,13 @@ class Agent:
         dir_u = game.direction == Direction.UP
         dir_d = game.direction == Direction.DOWN
 
+        def snake_on_side():
+            for x in range(int(game.head.x)+20, game.w, 20):
+                pt = Point(x, head.y)
+                if pt in game.snake:
+                    return True
+            return False
+
         state = [
             # Danger straight
             (dir_r and game.is_collision(point_r)) or
@@ -68,6 +75,8 @@ class Agent:
             game.food.y < game.head.y,
             game.food.y > game.head.y
         ]
+
+        print(snake_on_side())
 
         return np.array(state, dtype=int)
 
