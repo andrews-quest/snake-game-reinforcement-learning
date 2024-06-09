@@ -1,3 +1,5 @@
+import os.path
+
 import torch
 import random
 import numpy as np
@@ -13,12 +15,14 @@ LR = 0.001
 
 class Agent:
 
-    def __init__(self):
+    def __init__(self, load:bool = False):
         self.n_games = 0
         self.epsilon = 0 # randomness
         self.gamma = 0.9 # discount rate
         self.memory = deque(maxlen=MAX_MEMORY) # popleft if used
         self.model = Linear_QNet(11, 256, 3)
+        if load:
+            self.model.load_state_dict(torch.load(os.path.join('./model', 'model.pth')))
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def get_state(self, game):
@@ -58,7 +62,7 @@ class Agent:
             dir_u,
             dir_d,
 
-            # Food locatioen
+            # Food location
             game.food.x < game.head.x,
             game.food.x > game.head.x,
             game.food.y < game.head.y,
@@ -103,12 +107,12 @@ class Agent:
         return final_move
 
 
-def train():
+def train(load: bool):
     plot_scores = []
     plot_mean_scores = []
     total_score = 0
     record = 0
-    agent = Agent()
+    agent = Agent(False if load is False else True)
     game = SnakeGameAI()
     while True:
         # get old state
@@ -144,8 +148,10 @@ def train():
             mean_score = total_score / agent.n_games
             plot_mean_scores.append(mean_score)
             agent.model.save()
-            # plot(plot_scores, plot_mean_scores)
+            plot(plot_scores, plot_mean_scores)
 
 
 if __name__ == '__main__':
-    train()
+    print('Load the previous model? (y/n)')
+    load = False if input() == 'n' else True
+    train(load)
