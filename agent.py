@@ -20,7 +20,7 @@ class Agent:
         self.epsilon = 0 # randomness
         self.gamma = 0.9 # discount rate
         self.memory = deque(maxlen=MAX_MEMORY) # popleft if used
-        self.model = Linear_QNet(11, 256, 3)
+        self.model = Linear_QNet(13, 256, 3)
         if load:
             self.model.load_state_dict(torch.load(os.path.join('./model', 'model.pth')))
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
@@ -37,19 +37,46 @@ class Agent:
         dir_u = game.direction == Direction.UP
         dir_d = game.direction == Direction.DOWN
 
-        def snake_on_side():
-            for x in range(int(game.head.x)+20, game.w, 20):
-                pt = Point(x, head.y)
-                if pt in game.snake:
-                    return True
+        def danger_straight():
+            return ((dir_r and game.is_collision(point_r)) or
+                (dir_d and game.is_collision(point_d)) or
+                (dir_u and game.is_collision(point_u)) or
+                (dir_l and game.is_collision(point_l)))
+
+        def snake_on_side(action):
+            side = game._move(action)
+            boundary = Point(0, 0)
+            start = Point(0, 0)
+
+            if side == Direction.UP:
+                start = Point(game.head.x, game.head.y-20)
+                boundary = Point(game.head.x, 0)
+            if side == Direction.DOWN:
+                start = Point(game.head.x, game.head.y+20)
+                boundary = Point(game.head.x, game.h)
+            if side == Direction.LEFT:
+                start = Point(game.head.x-20, game.head.y)
+                boundary = Point(0, game.head.y)
+            if side == Direction.UP:
+                start = Point(game.head.x+20, game.head.y)
+                boundary = Point(game.w, game.head.y)
+
+            if side in (Direction.UP, Direction.DOWN):
+                for y in range(start[1], boundary[1], 20):
+                    pt = Point(head.x, y)
+                    if pt in game.snake:
+                        return True
+
+            if side in (Direction.LEFT, Direction.RIGHT):
+                for x in range(start[0], boundary[0], 20):
+                    pt = Point(x, head.y)
+                    if pt in game.snake:
+                        return True
             return False
 
         state = [
             # Danger straight
-            (dir_r and game.is_collision(point_r)) or
-            (dir_d and game.is_collision(point_d)) or
-            (dir_u and game.is_collision(point_u)) or
-            (dir_l and game.is_collision(point_l)),
+            danger_straight(),
 
             # Danger right
             (dir_r and game.is_collision(point_d)) or
@@ -73,10 +100,13 @@ class Agent:
             game.food.x < game.head.x,
             game.food.x > game.head.x,
             game.food.y < game.head.y,
-            game.food.y > game.head.y
+            game.food.y > game.head.y,
+
+            danger_straight() and snake_on_side([0, 1, 0]),
+            danger_straight() and snake_on_side([0, 0, 1])
         ]
 
-        print(snake_on_side())
+        print(state)
 
         return np.array(state, dtype=int)
 
