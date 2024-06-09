@@ -17,10 +17,10 @@ class Agent:
 
     def __init__(self, load:bool = False):
         self.n_games = 0
-        self.epsilon = 0 # randomness
-        self.gamma = 0.9 # discount rate
-        self.memory = deque(maxlen=MAX_MEMORY) # popleft if used
-        self.model = Linear_QNet(13, 256, 3)
+        self.epsilon = 0  # randomness
+        self.gamma = 0.9  # discount rate
+        self.memory = deque(maxlen=MAX_MEMORY)  # popleft if used
+        self.model = Linear_QNet(13, 500, 3)
         if load:
             self.model.load_state_dict(torch.load(os.path.join('./model', 'model.pth')))
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
@@ -37,14 +37,18 @@ class Agent:
         dir_u = game.direction == Direction.UP
         dir_d = game.direction == Direction.DOWN
 
-        def danger_straight():
+        def danger_straight(incr=0):
             return ((dir_r and game.is_collision(point_r)) or
                 (dir_d and game.is_collision(point_d)) or
                 (dir_u and game.is_collision(point_u)) or
                 (dir_l and game.is_collision(point_l)))
 
         def snake_on_side(action):
-            side = game._move(action)
+            clock_wise = [Direction.RIGHT, Direction.DOWN, Direction.LEFT, Direction.UP]
+            if action == [0, 1, 0]:
+                side = clock_wise[(clock_wise.index(game.direction)+1) % 4]
+            if action == [0, 0, 1]:
+                side = clock_wise[(clock_wise.index(game.direction)-1) % 4]
             boundary = Point(0, 0)
             start = Point(0, 0)
 
@@ -62,13 +66,13 @@ class Agent:
                 boundary = Point(game.w, game.head.y)
 
             if side in (Direction.UP, Direction.DOWN):
-                for y in range(start[1], boundary[1], 20):
+                for y in range(int(start[1]), int(boundary[1]), 20):
                     pt = Point(head.x, y)
                     if pt in game.snake:
                         return True
 
             if side in (Direction.LEFT, Direction.RIGHT):
-                for x in range(start[0], boundary[0], 20):
+                for x in range(int(start[0]), int(boundary[0]), 20):
                     pt = Point(x, head.y)
                     if pt in game.snake:
                         return True
@@ -106,7 +110,7 @@ class Agent:
             danger_straight() and snake_on_side([0, 0, 1])
         ]
 
-        print(state)
+        # print(state)
 
         return np.array(state, dtype=int)
 
